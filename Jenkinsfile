@@ -1,16 +1,21 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'devops-app'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         IMAGE_NAME = "devops-app"
-        DOCKER_HOST = "unix:///var/run/docker.sock"
+        DOCKER_SOCK = "/var/run/docker.sock"
     }
 
     stages {
-        stage('Clone Repository') {
+
+        stage('Checkout Repository') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/kuldeeprana2012/devops-lab.git'
+                git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab.git'
             }
         }
 
@@ -28,17 +33,17 @@ pipeline {
 
         stage('Deploy to Client via Ansible') {
             steps {
-                sh 'ansible-playbook -i /etc/ansible/hosts ansible/deploy.yml -u jenkins'
+                sh 'ansible-playbook ansible/deploy.yml'
             }
         }
     }
 
     post {
         success {
-            echo "✅ Deployment Successful! Access app at http://10.69.3.55:3000"
+            echo '✅ Deployment Successful!'
         }
         failure {
-            echo "❌ Deployment Failed. Check Jenkins logs."
+            echo '❌ Deployment Failed. Check Jenkins logs.'
         }
     }
 }
