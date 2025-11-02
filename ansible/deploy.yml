@@ -1,0 +1,26 @@
+- name: Deploy Node.js App Docker Container
+  hosts: all
+  become: yes
+  tasks:
+    - name: Stop existing container
+      command: docker stop devops_app
+      ignore_errors: yes
+
+    - name: Remove old container
+      command: docker rm devops_app
+      ignore_errors: yes
+
+    - name: Remove old image
+      command: docker rmi devops-app:latest
+      ignore_errors: yes
+
+    - name: Copy image from Jenkins
+      synchronize:
+        src: /opt/jenkins/devops-app.tar
+        dest: /tmp/devops-app.tar
+
+    - name: Load Docker image
+      command: docker load -i /tmp/devops-app.tar
+
+    - name: Run container
+      command: docker run -d --name devops_app -p 3000:3000 devops-app:latest
