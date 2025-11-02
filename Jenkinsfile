@@ -1,21 +1,19 @@
 pipeline {
     agent {
         docker {
-            image 'devops-app'
+            image 'node:18-alpine'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     environment {
         IMAGE_NAME = "devops-app"
-        DOCKER_SOCK = "/var/run/docker.sock"
     }
 
     stages {
-
         stage('Checkout Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab.git'
+                git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
             }
         }
 
