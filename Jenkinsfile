@@ -1,5 +1,10 @@
 pipeline {
-    agent none  // We'll specify per-stage agents
+    agent {
+        docker {
+            image 'docker:latest'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
+        }
+    }
 
     environment {
         IMAGE_NAME = "devops-app"
@@ -7,49 +12,40 @@ pipeline {
 
     stages {
         stage('Checkout Repository') {
-            agent any
             steps {
                 git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
             }
         }
 
-        stage('Build Docker Image') {
-            agent {
-                docker {
-                    image 'docker:24.0.5'  // or your preferred Docker version
-                    args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
-                }
-            }
+        stage('Use Existing Docker Image (Skip Build if Available)') {
             steps {
                 sh '''
-                    mkdir -p $WORKSPACE/.docker
-                    export DOCKER_CONFIG=$WORKSPACE/.docker
+                if [ -z "$(docker images -q ${IMAGE_NAME}:latest)" ]; then
+                    echo "⚙️ Image not found locally — building..."
                     docker build -t ${IMAGE_NAME}:latest .
+                else
+                    echo "✅ Using existing local image: ${IMAGE_NAME}:latest"
+                fi
                 '''
             }
         }
 
         stage('Save Docker Image') {
-            agent any
             steps {
                 sh '''
-                    mkdir -p /opt/jenkins
-                    docker save ${IMAGE_NAME}:latest -o /opt/jenkins/${IMAGE_NAME}.tar
+                mkdir -p $WORKSPACE/jenkins_artifacts
+                docker save ${IMAGE_NAME}:latest -o $WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar
+                echo "✅ Image saved at: $WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar"
                 '''
             }
         }
 
         stage('Deploy to Client via Ansible') {
-            agent {
-                docker {
-                    image 'willhallonline/ansible:latest' // ✅ Docker image with Ansible preinstalled
-                    args '-v /opt/jenkins:/opt/jenkins -v $WORKSPACE:/workspace -w /workspace'
-                }
-            }
+            agent any
             steps {
                 sh '''
-                    ansible --version
-                    ansible-playbook ansible/deploy.yml
+                echo "🚀 Deploying application with Ansible..."
+                ansible-playbook ansible/deploy.yml --extra-vars "image_tar=$WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar"
                 '''
             }
         }
