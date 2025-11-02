@@ -6,12 +6,12 @@ pipeline {
         ARTIFACT_DIR = "${WORKSPACE}/jenkins_artifacts"
     }
 
-    stages {
-        stage('Checkout Repository') {
-            steps {
-                git 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
-            }
-        }
+    stage('Checkout Repository') {
+    steps {
+        git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
+    }
+}
+
 
         stage('Use Existing Docker Image (Skip Build if Available)') {
             steps {
