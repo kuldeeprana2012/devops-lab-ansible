@@ -6,12 +6,12 @@ pipeline {
         ARTIFACT_DIR = "${WORKSPACE}/jenkins_artifacts"
     }
 
-    stage('Checkout Repository') {
-    steps {
-        git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
-    }
-}
-
+    stages {
+        stage('Checkout Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
+            }
+        }
 
         stage('Use Existing Docker Image (Skip Build if Available)') {
             steps {
@@ -38,22 +38,6 @@ pipeline {
 
         stage('Deploy to Client via Ansible') {
             steps {
-                // Run Ansible directly on Jenkins host
                 sh '''
                     echo "🚀 Deploying application with Ansible..."
-                    /usr/local/bin/ansible-playbook ansible/deploy.yml \
-                      --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
-                '''
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo "❌ Deployment Failed. Check Jenkins logs."
-        }
-        success {
-            echo "✅ Deployment Completed Successfully!"
-        }
-    }
-}
+                    /usr/local/bi
