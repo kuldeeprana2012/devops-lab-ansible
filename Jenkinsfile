@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'devops-app'
+        IMAGE_NAME   = 'devops-app'
         ARTIFACT_DIR = "${WORKSPACE}/jenkins_artifacts"
+        ANSIBLE_DIR  = "${WORKSPACE}/ansible"
     }
 
     stages {
@@ -40,8 +41,11 @@ pipeline {
             steps {
                 sh '''
                     echo "🚀 Deploying application with Ansible..."
-                    /usr/local/bin/ansible-playbook ansible/deploy.yml \
-                      --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
+
+                    # Run Ansible as the 'ansible' system user so it can access its SSH key
+                    sudo -u ansible /usr/local/bin/ansible-playbook \
+                        ${ANSIBLE_DIR}/deploy.yml \
+                        --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
                 '''
             }
         }
