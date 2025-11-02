@@ -37,10 +37,12 @@ pipeline {
         }
 
         stage('Deploy to Client via Ansible') {
-            steps {
-                sh 'ansible-playbook ansible/deploy.yml'
-            }
-        }
+    agent any  // ✅ run on Jenkins host, not inside Docker
+    steps {
+        sh 'ansible-playbook ansible/deploy.yml'
+    }
+}
+
     }
 
     post {
