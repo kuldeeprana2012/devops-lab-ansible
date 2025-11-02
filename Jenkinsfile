@@ -6,7 +6,6 @@ pipeline {
         }
     }
 
-
     environment {
         IMAGE_NAME = "devops-app"
     }
@@ -20,13 +19,20 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ${IMAGE_NAME}:latest .'
+                sh '''
+                mkdir -p $WORKSPACE/.docker
+                export DOCKER_CONFIG=$WORKSPACE/.docker
+                docker build -t ${IMAGE_NAME}:latest .
+                '''
             }
         }
 
         stage('Save Docker Image') {
             steps {
-                sh 'docker save ${IMAGE_NAME}:latest -o /opt/jenkins/${IMAGE_NAME}.tar'
+                sh '''
+                mkdir -p /opt/jenkins
+                docker save ${IMAGE_NAME}:latest -o /opt/jenkins/${IMAGE_NAME}.tar
+                '''
             }
         }
 
