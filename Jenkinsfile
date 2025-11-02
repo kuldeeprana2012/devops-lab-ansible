@@ -35,7 +35,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deployment Successful! Access app at http://172.20.10.2:3000"
+            echo "✅ Deployment Successful! Access app at http://10.69.3.55:3000"
         }
         failure {
             echo "❌ Deployment Failed. Check Jenkins logs."
