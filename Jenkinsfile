@@ -1,10 +1,11 @@
 pipeline {
     agent {
         docker {
-            image 'node:18-alpine'
+            image 'docker:latest'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
+
 
     environment {
         IMAGE_NAME = "devops-app"
