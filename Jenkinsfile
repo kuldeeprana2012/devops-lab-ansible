@@ -1,18 +1,18 @@
 pipeline {
     agent any
+
     environment {
         IMAGE_NAME = "devops-app"
         DOCKER_HOST = "unix:///var/run/docker.sock"
     }
 
-    stage('Clone Repository') {
-    steps {
-        git branch: 'main',
-            credentialsId: 'github-token',   // optional if repo is public
-            url: 'https://github.com/kuldeeprana2012/devops-lab.git'
-    }
-}
-
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/kuldeeprana2012/devops-lab.git'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -28,7 +28,7 @@ pipeline {
 
         stage('Deploy to Client via Ansible') {
             steps {
-                sh 'ansible-playbook -i /etc/ansible/hosts ansible/deploy.yml -u ansible'
+                sh 'ansible-playbook -i /etc/ansible/hosts ansible/deploy.yml -u jenkins'
             }
         }
     }
