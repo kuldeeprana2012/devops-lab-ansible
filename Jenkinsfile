@@ -40,4 +40,19 @@ pipeline {
             steps {
                 sh '''
                     echo "🚀 Deploying application with Ansible..."
-                    /usr/local/bi
+                    /usr/local/bin/ansible-playbook ansible/deploy.yml \
+                      --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
+                '''
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "❌ Deployment Failed. Check Jenkins logs."
+        }
+        success {
+            echo "✅ Deployment Completed Successfully!"
+        }
+    }
+}
