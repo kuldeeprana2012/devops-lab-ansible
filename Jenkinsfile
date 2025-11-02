@@ -11,6 +11,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
@@ -41,7 +42,6 @@ pipeline {
         }
 
         stage('Deploy to Client via Ansible') {
-            agent any
             steps {
                 sh '''
                 echo "🚀 Deploying application with Ansible..."
