@@ -5,12 +5,14 @@ pipeline {
         DOCKER_HOST = "unix:///var/run/docker.sock"
     }
 
-    stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/kuldeeprana2012/devops-lab.git'
-            }
-        }
+    stage('Clone Repository') {
+    steps {
+        git branch: 'main',
+            credentialsId: 'github-token',   // optional if repo is public
+            url: 'https://github.com/kuldeeprana2012/devops-lab.git'
+    }
+}
+
 
         stage('Build Docker Image') {
             steps {
