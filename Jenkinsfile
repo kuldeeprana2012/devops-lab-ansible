@@ -1,32 +1,27 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:latest'
-            args '-v /var/run/docker.sock:/var/run/docker.sock -u root'
-        }
-    }
+    agent any
 
     environment {
-        IMAGE_NAME = "devops-app"
+        IMAGE_NAME = 'devops-app'
+        ARTIFACT_DIR = "${WORKSPACE}/jenkins_artifacts"
     }
 
     stages {
-
         stage('Checkout Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
+                git 'https://github.com/kuldeeprana2012/devops-lab-ansible.git'
             }
         }
 
         stage('Use Existing Docker Image (Skip Build if Available)') {
             steps {
                 sh '''
-                if [ -z "$(docker images -q ${IMAGE_NAME}:latest)" ]; then
-                    echo "⚙️ Image not found locally — building..."
-                    docker build -t ${IMAGE_NAME}:latest .
-                else
-                    echo "✅ Using existing local image: ${IMAGE_NAME}:latest"
-                fi
+                    if [ -n "$(docker images -q ${IMAGE_NAME}:latest)" ]; then
+                        echo "✅ Using existing local image: ${IMAGE_NAME}:latest"
+                    else
+                        echo "❌ Image not found, build it first!"
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -34,29 +29,31 @@ pipeline {
         stage('Save Docker Image') {
             steps {
                 sh '''
-                mkdir -p $WORKSPACE/jenkins_artifacts
-                docker save ${IMAGE_NAME}:latest -o $WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar
-                echo "✅ Image saved at: $WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar"
+                    mkdir -p ${ARTIFACT_DIR}
+                    docker save ${IMAGE_NAME}:latest -o ${ARTIFACT_DIR}/${IMAGE_NAME}.tar
+                    echo "✅ Image saved at: ${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
                 '''
             }
         }
 
         stage('Deploy to Client via Ansible') {
             steps {
+                // Run Ansible directly on Jenkins host
                 sh '''
-                echo "🚀 Deploying application with Ansible..."
-                ansible-playbook ansible/deploy.yml --extra-vars "image_tar=$WORKSPACE/jenkins_artifacts/${IMAGE_NAME}.tar"
+                    echo "🚀 Deploying application with Ansible..."
+                    /usr/local/bin/ansible-playbook ansible/deploy.yml \
+                      --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"
                 '''
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Deployment Successful!'
-        }
         failure {
-            echo '❌ Deployment Failed. Check Jenkins logs.'
+            echo "❌ Deployment Failed. Check Jenkins logs."
+        }
+        success {
+            echo "✅ Deployment Completed Successfully!"
         }
     }
 }
