@@ -20,12 +20,12 @@
         state: absent
         force_absent: yes
 
-    - name: Copy Docker image tar from Jenkins workspace
-      ansible.builtin.copy:
+    - name: Copy Docker image tar from Jenkins workspace to remote host
+      ansible.posix.synchronize:
         src: "{{ local_image_path }}"
         dest: "{{ remote_image_path }}"
       delegate_to: localhost
-      become: true       # ✅ Added here (correct place)
+      become: false
 
     - name: Load Docker image from tar file
       ansible.builtin.command:
