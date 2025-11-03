@@ -25,7 +25,7 @@
         src: "{{ local_image_path }}"
         dest: "{{ remote_image_path }}"
       delegate_to: localhost
-      become: false
+      become: true       # ✅ Added here (correct place)
 
     - name: Load Docker image from tar file
       ansible.builtin.command:
