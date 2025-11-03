@@ -18,7 +18,7 @@ pipeline {
             steps {
                 sh '''
                     echo "🛠️  Building Docker image..."
-                    docker build --no-cache -t ${IMAGE_NAME}:latest .
+                    docker build  -t ${IMAGE_NAME}:latest .
                 '''
             }
         }
