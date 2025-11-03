@@ -14,15 +14,11 @@ pipeline {
             }
         }
 
-        stage('Use Existing Docker Image (Skip Build if Available)') {
+        stage('Build Docker Image') {
             steps {
                 sh '''
-                    if [ -n "$(docker images -q ${IMAGE_NAME}:latest)" ]; then
-                        echo "✅ Using existing local image: ${IMAGE_NAME}:latest"
-                    else
-                        echo "❌ Image not found, build it first!"
-                        exit 1
-                    fi
+                    echo "🛠️  Building Docker image..."
+                    docker build --no-cache -t ${IMAGE_NAME}:latest .
                 '''
             }
         }
@@ -41,8 +37,6 @@ pipeline {
             steps {
                 sh '''
                     echo "🚀 Deploying application with Ansible..."
-
-                    # Run Ansible as the 'ansible' system user so it can access its SSH key
                     sudo -u ansible /usr/local/bin/ansible-playbook \
                         ${ANSIBLE_DIR}/deploy.yml \
                         --extra-vars "image_tar=${ARTIFACT_DIR}/${IMAGE_NAME}.tar"

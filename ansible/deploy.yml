@@ -41,3 +41,10 @@
         restart_policy: always
         ports:
           - "3000:3000"
+
+    - name: Verify container is running
+      ansible.builtin.command:
+        cmd: docker ps --filter "name={{ container_name }}" --format "{{ '{{.Names}}' }}"
+      register: running_containers
+      changed_when: false
+      failed_when: container_name not in running_containers.stdout
