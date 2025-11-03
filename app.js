@@ -1,9 +1,8 @@
 const express = require('express');
 const app = express();
-const port = 3000;
 
 app.get('/', (req, res) => {
-  res.send('Hello from DevOps Lab of Kuldeepaaa! Node.js app deployed via Jenkins + Ansible + Docker.');
+  res.send('🚀 Updated version! Hello from DevOps Pipeline v2');
 });
 
-app.listen(port, () => console.log(`App listening on port ${port}`));
+app.listen(3000, () => console.log('App running on port 3000'));
