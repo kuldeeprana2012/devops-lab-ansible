@@ -4,7 +4,7 @@
   vars:
     container_name: devops_app
     image_name: devops-app:latest
-    local_image_path: /var/lib/jenkins/workspace/devops-lab-pipeline/devops-app.tar  # ✅ Adjust this if needed
+    local_image_path: /var/lib/jenkins/workspace/devops-lab-pipeline/jenkins_artifacts/devops-app.tar  # ✅ corrected path
     remote_image_path: /tmp/devops-app.tar
 
   tasks:
@@ -23,9 +23,11 @@
       ansible.builtin.copy:
         src: "{{ local_image_path }}"
         dest: "{{ remote_image_path }}"
-      delegate_to: localhost   # ✅ Copies from Jenkins (controller) to target
+      delegate_to: localhost   # ✅ Copying from Jenkins (controller) to target
       become: false
 
     - name: Load Docker image from tar file
       ansible.builtin.command:
-        cmd: docker load -i "{{ remote_image_
+        cmd: docker load -i "{{ remote_image_path }}"
+      register: result
+      changed_when: "'Loaded image' in res_
