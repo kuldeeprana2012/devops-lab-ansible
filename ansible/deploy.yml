@@ -1,10 +1,11 @@
 - name: Deploy Node.js App Docker Container
   hosts: all
   become: yes
+
   vars:
     container_name: devops_app
     image_name: devops-app:latest
-    local_image_path: /var/lib/jenkins/workspace/devops-lab-pipeline/jenkins_artifacts/devops-app.tar  # ✅ corrected path
+    local_image_path: /var/lib/jenkins/workspace/devops-lab-pipeline/jenkins_artifacts/devops-app.tar
     remote_image_path: /tmp/devops-app.tar
 
   tasks:
@@ -23,11 +24,20 @@
       ansible.builtin.copy:
         src: "{{ local_image_path }}"
         dest: "{{ remote_image_path }}"
-      delegate_to: localhost   # ✅ Copying from Jenkins (controller) to target
+      delegate_to: localhost
       become: false
 
     - name: Load Docker image from tar file
       ansible.builtin.command:
         cmd: docker load -i "{{ remote_image_path }}"
       register: result
-      changed_when: "'Loaded image' in res_
+      changed_when: "'Loaded image' in result.stdout"
+
+    - name: Run Node.js container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "3000:3000"
